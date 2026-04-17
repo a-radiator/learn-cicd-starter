@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy
+    name: Deploy to Google Cloud
     runs-on: ubuntu-latest
 
     steps:
@@ -20,24 +20,17 @@ jobs:
 
       - name: build
         run: ./scripts/buildprod.sh
-  google:
-    name: 'push'
-    runs-on: ubuntu-latest
 
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v4
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
-    - id: 'auth'
-      uses: 'google-github-actions/auth@v2'
-      with:
-        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v3'
 
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v3'
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
 
-    - name: 'Use gcloud CLI'
-      run: 'gcloud info'
-
-    - name: 'push docker image' 
-      run: 'gcloud builds submit . --tag us-central1-docker.pkg.dev/notely-493415/us-central1/notely-ar-repo/notely:prod'
+      - name: 'push docker image'
+        run: 'gcloud builds submit . --tag us-central1-docker.pkg.dev/notely-493415/us-central1/notely-ar-repo/notely:prod'
